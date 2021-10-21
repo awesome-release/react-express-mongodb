@@ -8,7 +8,8 @@ WORKDIR /usr/src/app
 COPY package.json /usr/src/app
 COPY package-lock.json /usr/src/app
 
-#
+ARG cache_bust 1234
+
 # Install dependecies
 #RUN npm set progress=false \
 #    && npm config set depth 0 \

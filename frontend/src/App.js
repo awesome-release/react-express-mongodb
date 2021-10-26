@@ -1,55 +1,53 @@
-import React from "react";
-import axios from "axios";
-import "./App.scss";
+import React, { useEffect, useState } from "react";
+
 import AddTodo from "./components/AddTodo";
 import TodoList from "./components/TodoList";
 
-export default class App extends React.Component {
-  constructor(props) {
-    super(props);
+import { getTodos, createTodo } from "./api.js";
 
-    this.state = {
-      todos: [],
-    };
-  }
+import "./App.scss";
 
-  componentDidMount() {
-    axios
-      .get("/api")
-      .then((response) => {
-        this.setState({
-          todos: response.data.data,
-        });
-      })
-      .catch((e) => console.log("Error : ", e));
-  }
+function App() {
+	const [todos, setTodos] = useState([]);
 
-  handleAddTodo = (value) => {
-    axios
-      .post("/api/todos", { text: value })
-      .then(() => {
-        this.setState({
-          todos: [...this.state.todos, { text: value }],
-        });
-      })
-      .catch((e) => console.log("Error : ", e));
-  };
+	useEffect(() => {
+		const fetchTodos = async () => {
+			try {
+				const response = await getTodos();
 
-  render() {
-    return (
-      <div className="App container">
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col-xs-12 col-sm-8 col-md-8 offset-md-2">
-              <h1>Todos</h1>
-              <div className="todo-app">
-                <AddTodo handleAddTodo={this.handleAddTodo} />
-                <TodoList todos={this.state.todos} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+				setTodos(response.data.data);
+			} catch (e) {
+				console.log("Error: ", e);
+			}
+		};
+		fetchTodos();
+	}, []);
+
+	const handleAddTodo = async (value) => {
+		try {
+			await createTodo(value);
+
+			setTodos([...todos, { text: value }]);
+		} catch (e) {
+			console.log("Error: ", e);
+		}
+	};
+
+	return (
+		<div className="App container">
+			<div className="container-fluid">
+				<div className="row">
+					<div className="col-xs-12 col-sm-8 col-md-8 offset-md-2">
+						<h1>Todos</h1>
+						<div className="todo-app">
+							<AddTodo handleAddTodo={handleAddTodo} />
+							<TodoList todos={todos} />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
 }
+
+export default App;

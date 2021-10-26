@@ -4,10 +4,9 @@ services:
     build: frontend
     ports:
       - 3000:3000
+    environment:
+      - REACT_APP_BACKEND_API=http://localhost:4000
     stdin_open: true
-    volumes:
-      - ./frontend:/usr/src/app
-      - /usr/src/app/node_modules
     container_name: frontend
     restart: always
     networks:
@@ -19,9 +18,8 @@ services:
     container_name: backend
     restart: always
     build: backend
-    volumes:
-      - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
+    ports:
+      - 4000:4000
     depends_on:
       - mongo
     networks:

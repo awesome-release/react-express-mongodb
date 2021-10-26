@@ -1,19 +1,18 @@
 # Create image based on the official Node image from dockerhub
-FROM node:lts-buster-slim
+FROM node:lts-slim
+
+# Add in python & build essentials for node-gyp
+RUN apt-get update || : && apt-get install -y \
+    python \
+    build-essential
 
 # Create app directory
 WORKDIR /usr/src/app
 
 # Copy dependency definitions
-COPY package.json /usr/src/app
-COPY package-lock.json /usr/src/app
-
-ARG cache_bust 1234
+COPY package*.json /usr/src/app
 
 # Install dependecies
-#RUN npm set progress=false \
-#    && npm config set depth 0 \
-#    && npm i install
 RUN npm ci
 
 # Get all the code needed to run the app

@@ -1,25 +1,31 @@
 # Create image based on the official Node image from dockerhub
-FROM node:lts-slim
+FROM node:14.0.0-alpine3.11 as builder
 
-# Add in python & build essentials for node-gyp
-RUN apt-get update || : && apt-get install -y \
-    python \
-    build-essential
+RUN apk add python make gcc g++
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy dependency definitions
-COPY package*.json /usr/src/app
+COPY package*.json ./
 
 # Install dependecies
 RUN npm ci
+RUN npm install -g react-scripts@3.4.1
 
 # Get all the code needed to run the app
-COPY . /usr/src/app
+COPY . ./
+
+RUN npm run build
+
+FROM nginx:stable-alpine
+
+# Copy build files to nginx
+COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose the port the app runs in
-EXPOSE 3000
+EXPOSE 80
 
 # Serve the app
-CMD ["npm", "start"]
+CMD ["nginx", "-g", "daemon off;"]

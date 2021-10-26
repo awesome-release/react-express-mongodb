@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const client = axios.create({
-	baseURL: process.env.REACT_APP_BACKEND_API || "http://localhost:4000"
+	baseURL: process.env.REACT_APP_BACKEND_API || "http://backend:4000"
 });
 
 export async function getTodos() {

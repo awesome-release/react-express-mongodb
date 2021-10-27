@@ -1,2 +1,4 @@
 node_modules
+Dockerfile
+.git
 npm-debug.log

@@ -1,14 +1,20 @@
-FROM node:lts-buster-slim
+# Create image based on the official Node image from dockerhub
+FROM node:lts-slim
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /server
 
-COPY package.json /usr/src/app/package.json
-COPY package-lock.json /usr/src/app/package-lock.json
+# Copy dependency definitions
+COPY package*.json ./
+
+# Install dependecies
 RUN npm ci
 
-COPY . /usr/src/app
+# Get all the code needed to run the app
+COPY . ./
 
-EXPOSE 3000
+# Expose the port the app runs in
+EXPOSE 4000
 
-CMD [ "npm", "run", "dev" ]
+# Serve the app
+CMD [ "npm", "start" ]

@@ -1,23 +1,20 @@
 # Create image based on the official Node image from dockerhub
-FROM node:lts-buster-slim
+FROM node:14-alpine
+
+# Add in python & build essentials for node-gyp
+RUN apk add python make gcc g++
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
 # Copy dependency definitions
-COPY package.json /usr/src/app
-COPY package-lock.json /usr/src/app
-
-ARG cache_bust 1234
+COPY package*.json ./
 
 # Install dependecies
-#RUN npm set progress=false \
-#    && npm config set depth 0 \
-#    && npm i install
-RUN npm ci
+RUN npm install
 
 # Get all the code needed to run the app
-COPY . /usr/src/app
+COPY . .
 
 # Expose the port the app runs in
 EXPOSE 3000

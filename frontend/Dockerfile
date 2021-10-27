@@ -1,30 +1,21 @@
 # Create image based on the official Node image from dockerhub
-FROM node:14.0.0-alpine3.11 as builder
-
+FROM node:14-alpine
 RUN apk add python make gcc g++
 
 # Create app directory
 WORKDIR /app
 
 # Copy dependency definitions
-COPY package*.json ./
+# COPY package*.json /app
+COPY . /app
 
 # Install dependecies
-RUN npm ci
+RUN npm install
 
 # Get all the code needed to run the app
-COPY . ./
-
-RUN npm run build
-
-FROM nginx:stable-alpine
-
-# Copy build files to nginx
-COPY --from=builder /app/build /usr/share/nginx/html
-COPY --from=builder /app/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose the port the app runs in
-EXPOSE 80
+EXPOSE 3000
 
 # Serve the app
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["npm", "start"]

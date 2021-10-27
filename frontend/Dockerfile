@@ -11,7 +11,6 @@ COPY package*.json ./
 
 # Install dependecies
 RUN npm ci
-RUN npm install -g react-scripts@3.4.1
 
 # Get all the code needed to run the app
 COPY . ./

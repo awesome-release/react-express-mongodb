@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const client = axios.create({
-	baseURL: process.env.REACT_APP_BACKEND_API || "http://backend:4000"
+	baseURL: process.env.BACKEND_INGRESS_URL
 });
 
 export async function getTodos() {

@@ -2,7 +2,7 @@
 FROM node:14-alpine
 
 # Add in python & build essentials for node-gyp
-RUN apk add python make gcc g++
+RUN apk add python3 make gcc g++
 
 # Create app directory
 WORKDIR /app

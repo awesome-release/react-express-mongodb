@@ -41,7 +41,9 @@ function App() {
 						<h1>Todos</h1>
 						<div className="todo-app">
 							<AddTodo handleAddTodo={handleAddTodo} />
-							<TodoList todos={todos} />
+							<div className="mt-3">
+								<TodoList todos={todos} />
+							</div>
 						</div>
 					</div>
 				</div>

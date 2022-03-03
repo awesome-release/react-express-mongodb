@@ -31,6 +31,16 @@ const routes = (app) => {
       });
   });
 
+  router.delete("/todos", (req, res) => {
+    Todo.deleteMany({})
+      .then((todos) => {
+        serverResponses.sendSuccess(res, messages.SUCCESSFUL, todos);
+      })
+      .catch((e) => {
+        serverResponses.sendError(res, messages.BAD_REQUEST, e);
+      });
+  });
+
   //it's a prefix before api it is useful when you have many modules and you want to
   //differentiate b/w each module you can use this technique
   app.use("/api", router);

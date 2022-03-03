@@ -3,3 +3,4 @@ server/node_modules/
 .idea/
 data
 *.log
+node_modules

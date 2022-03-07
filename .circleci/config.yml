@@ -20,8 +20,10 @@ jobs:
 
   release-create-environment:
     docker:
-      - image: circleci/node:13.8.0
+      - image: circleci/node:13.8.
     steps:
+      - attach_workspace:
+          at: ./
       - run:
           name: Create a new Release environment
           command: |

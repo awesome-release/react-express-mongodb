@@ -1,21 +1,36 @@
 version: 2.1
 
 jobs:
+  # In this example, we are not actually building and pushing docker image
+  build-and-upload-image:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run:
+          name: Build and push docker image
+          command: |
+            mkdir tmp
+            echo "Building docker image..."
+            echo "Push docker image..."
+            echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/frontend:main" > tmp/image_name
+      - persist_to_workspace:
+          root: .
+          paths:
+            - tmp/*
+
   release-create-environment:
     docker:
       - image: circleci/node:13.8.0
-    environment:
-      BRANCH: e2e-testing
-      COMMIT_SHA: 6607445147d1ae6e085658162bd4d54639d50ceb
-      COMITTER: autobot@releasehub.com
-      SERVICE: frontend
-      IMAGE_NAME: 232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/frontend:main
     steps:
       - run:
           name: Create a new Release environment
           command: |
+            IMAGE_NAME=$(cat tmp/image_name)
+            BRANCH=e2e-testing
+            COMMIT_SHA=6607445147d1ae6e085658162bd4d54639d50ceb
+            COMITTER=autobot@releasehub.com
+            SERVICE=frontend
             echo "Creating a new Release environment..."
-            mkdir tmp
             curl \
               -X POST \
               -d "{ \"app_id\": \"$RELEASE_APP_ID\", \"branch\": \"$BRANCH\", \"committer\":\"$COMITTER:\", \"commit_long\": \"$COMMIT_SHA\", \"services\": {\"$SERVICE\": \"$IMAGE_NAME\" } }" \
@@ -104,7 +119,9 @@ jobs:
 workflows:
   my_workflow:
     jobs:
-      - release-create-environment
+      - build-and-upload-image
+      - release-create-environment:
+          requires: [build-and-upload-image]
       - release-setup-environment:
           requires: [release-create-environment]
       - release-get-new-environment-urls:

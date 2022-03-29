@@ -68,9 +68,5 @@ workflows:
       - build-and-upload-image
       - release-create-environment:
           requires: [build-and-upload-image]
-      - release-setup-environment:
-          requires: [release-create-environment]
-      - release-get-new-environment-urls:
-          requires: [release-setup-environment]
       - run-e2e-tests:
-          requires: [release-get-new-environment-urls]
+          requires: [release-create-environment]

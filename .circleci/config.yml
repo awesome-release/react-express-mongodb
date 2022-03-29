@@ -34,7 +34,7 @@ jobs:
               --account "$RELEASE_ACCOUNT_ID" \
               --app "$RELEASE_APP_ID" \
               --branch "$BRANCH" \
-              --image-overrides "$SERVICE=$IMAGE_URL"
+              --image-overrides "$SERVICE=$IMAGE_URL" \
               --output json \
               --wait > tmp/json
 

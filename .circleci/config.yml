@@ -53,8 +53,8 @@ jobs:
           name: Create Release Environment
           command: |
             echo "Install dependencies and run E2E tests..."
-            FRONTEND_URL=$(jq '.environment.hostnames | .[] | select(.target=="frontend").hostname' tmp/json)
-            BACKEND_URL=$(jq '.environment.hostnames | .[] | select(.target=="backend").hostname' tmp/json)
+            FRONTEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="frontend").hostname' tmp/json)
+            BACKEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="backend").hostname' tmp/json)
             jq -n --arg baseUrl "$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
             jq -n --arg backendUrl "$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
             sudo apt-get update

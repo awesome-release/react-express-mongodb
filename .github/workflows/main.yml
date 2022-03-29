@@ -12,14 +12,14 @@ jobs:
             echo "Building docker image..."
             echo "Push docker image..."
             export IMAGE_URL="232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main"
-            echo "::set-output name=image::${IMAGE_URL}"
+            echo "::set-output name=image_url::${IMAGE_URL}"
     outputs:
-      image: ${{ steps.step1.outputs.image }}
+      image_url: ${{ steps.step1.outputs.image_url }}
   create-release-environment:
     needs: [build-and-upload-image]
     runs-on: ubuntu-latest
     container:
       image: public.ecr.aws/b4g8c3s2/release-cli
     steps:
-      - run: echo ${{needs.build-and-upload-image.outputs.image}}
+      - run: echo ${{needs.build-and-upload-image.outputs.image_url}}
 

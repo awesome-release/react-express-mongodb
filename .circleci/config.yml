@@ -30,7 +30,7 @@ jobs:
             IMAGE_URL=$(cat tmp/image_name)
             BRANCH=e2e-testing
             SERVICE=frontend
-            release environments create \
+            /release environments create \
               --account "$RELEASE_ACCOUNT_ID" \
               --app "$RELEASE_APP_ID" \
               --branch "$BRANCH" \

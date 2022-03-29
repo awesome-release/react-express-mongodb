@@ -20,83 +20,23 @@ jobs:
 
   release-create-environment:
     docker:
-      - image: circleci/node:13.8.0
+      - image: public.ecr.aws/b4g8c3s2/release-cli
     steps:
       - attach_workspace:
           at: ./
       - run:
           name: Create a new Release environment
           command: |
-            IMAGE_NAME=$(cat tmp/image_name)
+            IMAGE_URL=$(cat tmp/image_name)
             BRANCH=e2e-testing
-            COMMIT_SHA=6607445147d1ae6e085658162bd4d54639d50ceb
-            COMITTER=autobot@releasehub.com
             SERVICE=frontend
-            echo "Creating a new Release environment..."
-            curl \
-              -X POST \
-              -d "{ \"app_id\": \"$RELEASE_APP_ID\", \"branch\": \"$BRANCH\", \"committer\":\"$COMITTER:\", \"commit_long\": \"$COMMIT_SHA\", \"services\": {\"$SERVICE\": \"$IMAGE_NAME\" } }" \
-              -H "Accept: application/json" \
-              -H "Content-Type: application/json" \
-              -H "X-Account-ID: $RELEASE_ACCOUNT_ID" \
-              -H "X-Account-Token: $RELEASE_ACCOUNT_AUTHENTICATION_TOKEN" \
-              "https://api.releasehub.com/api/apps/$RELEASE_APP_ID/environments/" \
-              | jq -r '.id' > tmp/environment_id
-      - persist_to_workspace:
-          root: .
-          paths:
-            - tmp/*
-
-  release-setup-environment:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Setup the new Release environment
-          command: |
-            echo "Setup the new Release environment..."
-            ENVIRONMENT_ID=$(cat tmp/environment_id)
-            curl \
-              -X POST \
-              -H "Accept: application/json" \
-              -H "Content-Type: application/json" \
-              -H "X-Account-ID: $RELEASE_ACCOUNT_ID" \
-              -H "X-Account-Token: $RELEASE_ACCOUNT_AUTHENTICATION_TOKEN" \
-              "https://api.releasehub.com/api/apps/$RELEASE_APP_ID/environments/$ENVIRONMENT_ID/setup"
-
-  release-get-new-environment-urls:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Get new environment URLs
-          command: |
-            ENVIRONMENT_ID=$(cat tmp/environment_id)
-            echo "Get new environment URLs..."
-            echo "Waiting for 210s to fetch..."
-            sleep 210
-            while ! [ -s tmp/json ]
-            do
-              curl \
-                -X GET \
-                -H "Accept: application/json" \
-                -H "Content-Type: application/json" \
-                -H "X-Account-ID: $RELEASE_ACCOUNT_ID" \
-                -H "X-Account-Token: $RELEASE_ACCOUNT_AUTHENTICATION_TOKEN" \
-                "https://api.releasehub.com/api/apps/$RELEASE_APP_ID/environments/$ENVIRONMENT_ID" \
-                | jq -r '.hostnames' > tmp/json
-
-              echo "New environment is still not up yet, will retry in 30 secs..."
-              sleep 30
-            done
-      - persist_to_workspace:
-          root: .
-          paths:
-            - tmp/*
+            release environments create \
+              --account "$RELEASE_ACCOUNT_ID" \
+              --app "$RELEASE_APP_ID" \
+              --branch "$BRANCH" \
+              --image-overrides "$SERVICE=$IMAGE_URL"
+              --output json \
+              --wait > tmp/json
 
   run-e2e-tests:
     docker:
@@ -109,14 +49,18 @@ jobs:
           name: Create Release Environment
           command: |
             echo "Install dependencies and run E2E tests..."
-            FRONTEND_URL=$(jq '.[].hostname' tmp/json | grep frontend | tr -d '"' | awk '{print "https://"$1}')
-            BACKEND_URL=$(jq '.[].hostname' tmp/json | grep backend | tr -d '"' | awk '{print "https://"$1}')
-            jq -n --arg baseUrl "$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
-            jq -n --arg backendUrl "$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
-            sudo apt-get update
-            sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-            npm install
-            npm run cy:run
+
+            cat tmp/json | jq
+
+            # FRONTEND_URL=$(jq '.[].hostname' tmp/json | grep frontend | tr -d '"' | awk '{print "https://"$1}')
+            # BACKEND_URL=$(jq '.[].hostname' tmp/json | grep backend | tr -d '"' | awk '{print "https://"$1}')
+            # jq -n --arg baseUrl "$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
+            # jq -n --arg backendUrl "$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
+
+            # sudo apt-get update
+            # sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+            # npm install
+            # npm run cy:run
 
 workflows:
   my_workflow:

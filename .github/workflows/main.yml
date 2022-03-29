@@ -15,11 +15,11 @@ jobs:
         with:
           name: image_name
           path: image_name
-
   create_release_environment:
     name: create release environment
     needs: build_and_upload
     runs-on: ubuntu-latest
+    container: public.ecr.aws/b4g8c3s2/release-cli
     steps:
       - name: download artifacts
         uses: actions/download-artifact@v3
@@ -27,5 +27,14 @@ jobs:
           name: image_name
       - shell: bash
         run: |
-          cat image_name
+          IMAGE_URL=$(cat image_name)
+          BRANCH=e2e-testing
+          SERVICE=backend
+          /release environments create \
+            --account "$RELEASE_ACCOUNT_ID" \
+            --app "$RELEASE_APP_ID" \
+            --branch "$BRANCH" \
+            --image-overrides "$SERVICE=$IMAGE_URL" \
+            --output json \
+            --wait > tmp/json
 

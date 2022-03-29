@@ -8,10 +8,11 @@ jobs:
     steps:
       - id: steps1
         run: |
+            mkdir -p /tmp
             echo "Building docker image..."
             echo "Push docker image..."
-            mkdir -p /tmp
-            echo "::set-output name=image::232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main"
+            export IMAGE_URL="232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main"
+            echo "::set-output name=image::${IMAGE_URL}"
     outputs:
       image: ${{ steps.step1.outputs.image }}
   create-release-environment:

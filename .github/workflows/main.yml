@@ -6,20 +6,19 @@ jobs:
   build-and-upload-image:
     runs-on: ubuntu-latest
     steps:
-      - id: step1
-        run: echo "::set-output name=test::hello"
-      - id: step2
-        run: echo "::set-output name=test::world"
+      - id: steps1
+        run: |
+            echo "Building docker image..."
+            echo "Push docker image..."
+            echo echo "::set-output name=image_url::232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > tmp/image_name
     outputs:
-      output1: ${{ steps.step1.outputs.test }}
-      output2: ${{ steps.step2.outputs.test }}
+      image_url: ${{ steps.step1.outputs.image_url }}
   create-release-environment:
     needs: [build-and-upload-image]
     runs-on: ubuntu-latest
     container:
       image: public.ecr.aws/b4g8c3s2/release-cli
     steps:
-      - run: echo ${{needs.build-and-upload-image.outputs.output1}} ${{needs.build-and-upload-image.outputs.output2}}
-
+      - run: echo ${{needs.build-and-upload-image.outputs.image_url}}
 
 

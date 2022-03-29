@@ -37,6 +37,11 @@ jobs:
               --image-overrides "$SERVICE=$IMAGE_URL" \
               --output json \
               --wait > tmp/json
+      - persist_to_workspace:
+          root: .
+          paths:
+            - tmp/*
+
 
   run-e2e-tests:
     docker:

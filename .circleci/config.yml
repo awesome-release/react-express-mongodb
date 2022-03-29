@@ -12,7 +12,7 @@ jobs:
             mkdir tmp
             echo "Building docker image..."
             echo "Push docker image..."
-            echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/frontend:main" > tmp/image_name
+            echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > tmp/image_name
       - persist_to_workspace:
           root: .
           paths:

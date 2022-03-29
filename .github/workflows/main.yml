@@ -10,7 +10,7 @@ jobs:
         run: |
             echo "Building docker image..."
             echo "Push docker image..."
-            echo echo "::set-output name=image_url::232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > tmp/image_name
+            echo "::set-output name=image_url::232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > tmp/image_name
     outputs:
       image_url: ${{ steps.step1.outputs.image_url }}
   create-release-environment:

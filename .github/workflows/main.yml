@@ -1,25 +1,31 @@
 name: GitHub Actions Demo
-
 on: [push]
 
 jobs:
-  build-and-upload-image:
+  build_and_upload:
     runs-on: ubuntu-latest
     steps:
-      - id: steps1
+      - shell: bash
         run: |
-            mkdir -p /tmp
-            echo "Building docker image..."
-            echo "Push docker image..."
-            export IMAGE_URL="232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main"
-            echo "::set-output name=image_url::${IMAGE_URL}"
-    outputs:
-      image_url: ${{ steps.step1.outputs.image_url }}
-  create-release-environment:
-    needs: [build-and-upload-image]
+          echo "building docker image..."
+          echo "uploading docker image..."
+          echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > image_name
+      - name: upload image name
+        uses: actions/upload-artifact@v3
+        with:
+          name: image_name
+          path: image_name
+
+  create_release_environment:
+    name: create release environment
+    needs: build_and_upload
     runs-on: ubuntu-latest
-    container:
-      image: public.ecr.aws/b4g8c3s2/release-cli
     steps:
-      - run: echo ${{needs.build-and-upload-image.outputs.image_url}}
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: image_name
+      - shell: bash
+        run: |
+          cat image_name
 

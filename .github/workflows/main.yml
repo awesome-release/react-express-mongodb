@@ -27,6 +27,8 @@ jobs:
           name: image_name
       - shell: bash
         run: |
+          ls -lash
+          cat image_name
           IMAGE_URL=$(cat image_name)
           BRANCH=e2e-testing
           SERVICE=backend

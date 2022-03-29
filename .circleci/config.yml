@@ -42,7 +42,6 @@ jobs:
           paths:
             - tmp/*
 
-
   run-e2e-tests:
     docker:
       - image: circleci/node:13.8.0
@@ -54,18 +53,14 @@ jobs:
           name: Create Release Environment
           command: |
             echo "Install dependencies and run E2E tests..."
-
-            cat tmp/json | jq
-
-            # FRONTEND_URL=$(jq '.[].hostname' tmp/json | grep frontend | tr -d '"' | awk '{print "https://"$1}')
-            # BACKEND_URL=$(jq '.[].hostname' tmp/json | grep backend | tr -d '"' | awk '{print "https://"$1}')
-            # jq -n --arg baseUrl "$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
-            # jq -n --arg backendUrl "$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
-
-            # sudo apt-get update
-            # sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-            # npm install
-            # npm run cy:run
+            FRONTEND_URL=$(jq '.environment.hostnames | .[] | select(.target=="frontend").hostname' tmp/json)
+            BACKEND_URL=$(jq '.environment.hostnames | .[] | select(.target=="backend").hostname' tmp/json)
+            jq -n --arg baseUrl "$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
+            jq -n --arg backendUrl "$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
+            sudo apt-get update
+            sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+            npm install
+            npm run cy:run
 
 workflows:
   my_workflow:

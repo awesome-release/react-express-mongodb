@@ -5,15 +5,16 @@ on: [push]
 jobs:
   build-and-upload-image:
     runs-on: ubuntu-latest
-    outputs:
-      output1: ${{ steps.step1.outputs.test }}
-      output2: ${{ steps.step2.outputs.test }}
     steps:
       - id: step1
         run: echo "::set-output name=test::hello"
       - id: step2
         run: echo "::set-output name=test::world"
+    outputs:
+      output1: ${{ steps.step1.outputs.test }}
+      output2: ${{ steps.step2.outputs.test }}
   create-release-environment:
+    needs: [build-and-upload-image]
     runs-on: ubuntu-latest
     container:
       image: public.ecr.aws/b4g8c3s2/release-cli

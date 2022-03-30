@@ -1,6 +1,9 @@
-name: GitHub Actions Demo
+name: GitHub Actions E2E Testing Demo
 
-on: [push]
+on:
+  push:
+    branches:
+      - demo/github-actions
 
 jobs:
   build_and_upload:
@@ -12,12 +15,13 @@ jobs:
           echo "building docker image..."
           echo "uploading docker image..."
           mkdir tmp
-          echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > image_name.txt
+          echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > tmp/backend_image.txt
+          echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/frontend:main" > tmp/frontend_image.txt
       - name: upload image name
         uses: actions/upload-artifact@v3
         with:
-          name: image_name
-          path: image_name.txt
+          name: images
+          path: tmp/
 
   create_environment:
     name: Create release environment
@@ -28,7 +32,7 @@ jobs:
       - name: download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: image_name
+          name: images
       - name: create release environment
         shell: bash
         env:
@@ -37,14 +41,17 @@ jobs:
           RELEASE_LOGIN: ${{ secrets.RELEASE_LOGIN }}
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
-          IMAGE_URL=$(cat image_name.txt)
           BRANCH=e2e-testing
-          SERVICE=backend
+          FRONTEND_IMAGE=$(cat frontend_image.txt)
+          BACKEND_IMAGE=$(cat backend_image.txt)
+          FRONTEND=frontend
+          BACKEND=backend
           release environments create \
             --account "$RELEASE_ACCOUNT_ID" \
             --app "$RELEASE_APP_ID" \
             --branch "$BRANCH" \
-            --image-overrides "$SERVICE=$IMAGE_URL" \
+            --image-overrides "$FRONTEND=$FRONTEND_IMAGE" \
+            --image-overrides "$BACKEND=$BACKEND_IMAGE" \
             --output json \
             --wait > res.json
       - name: upload image name

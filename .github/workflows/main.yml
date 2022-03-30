@@ -30,6 +30,11 @@ jobs:
           name: image_name
       - name: create release environment
         shell: bash
+        env:
+          RELEASE_ACCOUNT_ID: ${{ secrets.RELEASE_ACCOUNT_ID }}
+          RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+          RELEASE_LOGIN: ${{ secrets.RELEASE_LOGIN }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           ls -R
           IMAGE_URL=$(cat image_name.txt)

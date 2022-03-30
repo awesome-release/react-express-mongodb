@@ -19,12 +19,13 @@ jobs:
     name: create release environment
     needs: build_and_upload
     runs-on: ubuntu-latest
-    container: public.ecr.aws/b4g8c3s2/release-cli
+    container: public.ecr.aws/b4g8c3s2/release-cli:v0.3.0-beta2
     steps:
       - name: download artifacts
         uses: actions/download-artifact@v3
         with:
           name: image_name
+      - shell: bash
         run: |
           ls -lash
           cat image_name

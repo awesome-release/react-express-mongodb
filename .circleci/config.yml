@@ -29,8 +29,8 @@ jobs:
           name: Create a new Release environment
           command: |
             BRANCH=e2e-testing
-            FRONTEND_IMAGE=$(cat frontend_image.txt)
-            BACKEND_IMAGE=$(cat backend_image.txt)
+            FRONTEND_IMAGE=$(cat tmp/frontend_image.txt)
+            BACKEND_IMAGE=$(cat tmp/backend_image.txt)
             FRONTEND=frontend
             BACKEND=backend
             release environments create \

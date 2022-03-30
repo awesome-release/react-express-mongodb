@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           ls -R
-          IMAGE_URL=$(cat tmp/image_name)
+          IMAGE_URL=$(cat tmp/image_name.txt)
           BRANCH=e2e-testing
           SERVICE=backend
           release environments create \
@@ -41,12 +41,12 @@ jobs:
             --branch "$BRANCH" \
             --image-overrides "$SERVICE=$IMAGE_URL" \
             --output json \
-            --wait > tmp/json
+            --wait > tmp/res.json
       - name: upload image name
         uses: actions/upload-artifact@v3
         with:
           name: json
-          path: tmp/json
+          path: tmp/res.json
 
   run_e2e_tests:
     name: run e2e tests
@@ -61,8 +61,8 @@ jobs:
         shell: bash
         run: |
           echo "Install dependencies and run E2E tests..."
-          FRONTEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="frontend").hostname' tmp/json)
-          BACKEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="backend").hostname' tmp/json)
+          FRONTEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="frontend").hostname' tmp/res.json)
+          BACKEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="backend").hostname' tmp/res.json)
           jq -n --arg baseUrl "https://$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
           jq -n --arg backendUrl "https://$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
           sudo apt-get update

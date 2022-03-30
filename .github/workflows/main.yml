@@ -11,12 +11,12 @@ jobs:
           echo "building docker image..."
           echo "uploading docker image..."
           mkdir tmp
-          echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > tmp/image_name.txt
+          echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > image_name.txt
       - name: upload image name
         uses: actions/upload-artifact@v3
         with:
           name: image_name
-          path: tmp/image_name.txt
+          path: image_name.txt
 
   create_release_environment:
     name: create release environment
@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           ls -R
-          IMAGE_URL=$(cat tmp/image_name.txt)
+          IMAGE_URL=$(cat image_name.txt)
           BRANCH=e2e-testing
           SERVICE=backend
           release environments create \
@@ -41,12 +41,12 @@ jobs:
             --branch "$BRANCH" \
             --image-overrides "$SERVICE=$IMAGE_URL" \
             --output json \
-            --wait > tmp/res.json
+            --wait > res.json
       - name: upload image name
         uses: actions/upload-artifact@v3
         with:
           name: json
-          path: tmp/res.json
+          path: res.json
 
   run_e2e_tests:
     name: run e2e tests
@@ -61,8 +61,8 @@ jobs:
         shell: bash
         run: |
           echo "Install dependencies and run E2E tests..."
-          FRONTEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="frontend").hostname' tmp/res.json)
-          BACKEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="backend").hostname' tmp/res.json)
+          FRONTEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="frontend").hostname' res.json)
+          BACKEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="backend").hostname' res.json)
           jq -n --arg baseUrl "https://$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
           jq -n --arg backendUrl "https://$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
           sudo apt-get update

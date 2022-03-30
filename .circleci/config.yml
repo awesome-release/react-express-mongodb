@@ -57,8 +57,8 @@ jobs:
           name: Create Release Environment
           command: |
             echo "Install dependencies and run E2E tests..."
-            FRONTEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="frontend").hostname' res.json)
-            BACKEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="backend").hostname' res.json)
+            FRONTEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="frontend").hostname' tmp/res.json)
+            BACKEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="backend").hostname' tmp/res.json)
             jq -n --arg baseUrl "https://$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
             jq -n --arg backendUrl "https://$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
             sudo apt-get update
@@ -69,8 +69,17 @@ jobs:
 workflows:
   my_workflow:
     jobs:
-      - build-and-upload-image
+      - build-and-upload-image:
+          filters:
+            branches:
+              only: e2e-testing
       - create-release-environment:
           requires: [build-and-upload-image]
+          filters:
+            branches:
+              only: e2e-testing
       - run-e2e-tests:
           requires: [create-release-environment]
+          filters:
+            branches:
+              only: e2e-testing

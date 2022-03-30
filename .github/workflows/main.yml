@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   build_and_upload:
+    name: Build and upload docker image
     runs-on: ubuntu-latest
     steps:
       - shell: bash
@@ -18,8 +19,8 @@ jobs:
           name: image_name
           path: image_name.txt
 
-  create_release_environment:
-    name: create release environment
+  create_environment:
+    name: Create release environment
     needs: build_and_upload
     runs-on: ubuntu-latest
     container: public.ecr.aws/b4g8c3s2/release-cli:v0.3.0-beta2
@@ -36,7 +37,6 @@ jobs:
           RELEASE_LOGIN: ${{ secrets.RELEASE_LOGIN }}
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
-          ls -R
           IMAGE_URL=$(cat image_name.txt)
           BRANCH=e2e-testing
           SERVICE=backend
@@ -55,9 +55,11 @@ jobs:
 
   run_e2e_tests:
     name: run e2e tests
-    needs: create_release_environment
+    needs: create_environment
     runs-on: ubuntu-latest
     steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
       - name: download artifacts
         uses: actions/download-artifact@v3
         with:

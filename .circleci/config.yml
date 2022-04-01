@@ -21,7 +21,7 @@ jobs:
 
   create-release-environment:
     docker:
-      - image: public.ecr.aws/b4g8c3s2/release-cli:v0.3.0-beta2
+      - image: public.ecr.aws/b4g8c3s2/release-cli
     steps:
       - attach_workspace:
           at: ./
@@ -68,7 +68,7 @@ jobs:
 
   delete-release-environment:
     docker:
-      - image: public.ecr.aws/b4g8c3s2/release-cli:v0.3.0-beta2
+      - image: public.ecr.aws/b4g8c3s2/release-cli
     steps:
       - attach_workspace:
           at: ./
@@ -76,7 +76,7 @@ jobs:
           name: Delete Release Environment
           command: |
             ENVIRONMENT_ID=$(jq -r '.environment.id' tmp/res.json)
-            release environments delete $ENVIRONMENT_ID \
+            release environments delete "$ENVIRONMENT_ID" \
               --account "$RELEASE_ACCOUNT_ID" \
               --app "$RELEASE_APP_ID"
 

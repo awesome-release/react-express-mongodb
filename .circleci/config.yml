@@ -75,8 +75,10 @@ jobs:
       - run:
           name: Delete Release Environment
           command: |
-            cat tmp/res.json
-
+            ENVIRONMENT_ID=$(jq -r '.environment.id' tmp/res.json)
+            release environments delete $ENVIRONMENT_ID \
+              --account "$RELEASE_ACCOUNT_ID" \
+              --app "$RELEASE_APP_ID"
 
 workflows:
   my_workflow:

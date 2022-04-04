@@ -83,3 +83,23 @@ jobs:
           sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
           npm install
           npm run cy:run
+
+  delete_environment:
+    name: Delete release environment
+    needs: run_e2e_tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: json
+      - name: delete release environment
+        shell: bash
+        run: |
+          echo "Delete the Release environment..."
+          ENVIRONMENT_ID=$(jq -r '.environment.id' res.json)
+          release environments delete "$ENVIRONMENT_ID" \
+            --account "$RELEASE_ACCOUNT_ID" \
+            --app "$RELEASE_APP_ID"

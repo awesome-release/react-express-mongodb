@@ -1,0 +1,106 @@
+name: GitHub Actions E2E Testing Demo
+
+on:
+  push:
+    branches:
+      - demo/github-actions
+
+jobs:
+  build_and_upload:
+    name: Build and upload docker image
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          echo "building docker image..."
+          echo "uploading docker image..."
+          mkdir tmp
+          echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/backend:main" > tmp/backend_image.txt
+          echo "232490755822.dkr.ecr.us-west-2.amazonaws.com/awesome-release/react-express-mongodb/frontend:main" > tmp/frontend_image.txt
+      - name: upload image name
+        uses: actions/upload-artifact@v3
+        with:
+          name: images
+          path: tmp/
+
+  create_environment:
+    name: Create release environment
+    needs: build_and_upload
+    runs-on: ubuntu-latest
+    container: public.ecr.aws/b4g8c3s2/release-cli
+    steps:
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: images
+      - name: create release environment
+        shell: bash
+        env:
+          RELEASE_ACCOUNT_ID: ${{ secrets.RELEASE_ACCOUNT_ID }}
+          RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+          RELEASE_LOGIN: ${{ secrets.RELEASE_LOGIN }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          BRANCH=e2e-testing
+          FRONTEND_IMAGE=$(cat frontend_image.txt)
+          BACKEND_IMAGE=$(cat backend_image.txt)
+          FRONTEND=frontend
+          BACKEND=backend
+          release environments create \
+            --account "$RELEASE_ACCOUNT_ID" \
+            --app "$RELEASE_APP_ID" \
+            --branch "$BRANCH" \
+            --image-overrides "$FRONTEND=$FRONTEND_IMAGE" \
+            --image-overrides "$BACKEND=$BACKEND_IMAGE" \
+            --output json \
+            --wait > res.json
+      - name: upload image name
+        uses: actions/upload-artifact@v3
+        with:
+          name: json
+          path: res.json
+
+  run_e2e_tests:
+    name: run e2e tests
+    needs: create_environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: json
+      - name: create release environment
+        shell: bash
+        run: |
+          echo "Install dependencies and run E2E tests..."
+          FRONTEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="frontend").hostname' res.json)
+          BACKEND_URL=$(jq -r '.environment.hostnames | .[] | select(.target=="backend").hostname' res.json)
+          jq -n --arg baseUrl "https://$FRONTEND_URL" '{ baseUrl: $baseUrl }' > cypress.json
+          jq -n --arg backendUrl "https://$BACKEND_URL" '{ backendUrl: $backendUrl }' > cypress.env.json
+          sudo apt-get update
+          sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+          npm install
+          npm run cy:run
+
+  delete_environment:
+    name: Delete release environment
+    needs: run_e2e_tests
+    runs-on: ubuntu-latest
+    container: public.ecr.aws/b4g8c3s2/release-cli
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: json
+      - name: delete release environment
+        shell: bash
+        run: |
+          echo "Delete the Release environment..."
+          ENVIRONMENT_ID=$(jq -r '.environment.id' res.json)
+          release environments delete "$ENVIRONMENT_ID" \
+            --account "$RELEASE_ACCOUNT_ID" \
+            --app "$RELEASE_APP_ID"

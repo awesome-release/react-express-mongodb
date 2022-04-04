@@ -88,6 +88,7 @@ jobs:
     name: Delete release environment
     needs: run_e2e_tests
     runs-on: ubuntu-latest
+    container: public.ecr.aws/b4g8c3s2/release-cli:v0.3.0-beta2
     steps:
       - name: checkout repository
         uses: actions/checkout@v3

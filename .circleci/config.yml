@@ -28,7 +28,7 @@ jobs:
       - run:
           name: Create a new Release environment
           command: |
-            BRANCH=e2e-testing
+            BRANCH=demo/circleci
             FRONTEND_IMAGE=$(cat tmp/frontend_image.txt)
             BACKEND_IMAGE=$(cat tmp/backend_image.txt)
             FRONTEND=frontend
@@ -86,19 +86,19 @@ workflows:
       - build-and-upload-image:
           filters:
             branches:
-              only: e2e-testing
+              only: demo/circleci
       - create-release-environment:
           requires: [build-and-upload-image]
           filters:
             branches:
-              only: e2e-testing
+              only: demo/circleci
       - run-e2e-tests:
           requires: [create-release-environment]
           filters:
             branches:
-              only: e2e-testing
+              only: demo/circleci
       - delete-release-environment:
           requires: [run-e2e-tests]
           filters:
             branches:
-              only: e2e-testing
+              only: demo/circleci

@@ -39,6 +39,7 @@ function App() {
 				<div className="row">
 					<div className="col-xs-12 col-sm-8 col-md-8 offset-md-2">
 						<h1>Todos</h1>
+						hello
 						<div className="todo-app">
 							<AddTodo handleAddTodo={handleAddTodo} />
 							<div className="mt-3">
